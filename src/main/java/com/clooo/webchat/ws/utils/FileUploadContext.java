@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+@Deprecated
 public class FileUploadContext {
     private final String fileName;
     private final FileOutputStream fos;

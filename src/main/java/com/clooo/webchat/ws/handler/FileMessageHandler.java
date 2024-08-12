@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+@Deprecated
 public class FileMessageHandler {
 
     private final Map<ChannelId, FileUploadContext> uploadContexts = new ConcurrentHashMap<>();
