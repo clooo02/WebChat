@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: WebChat
+server:
+  port: 8088
+  ssl:
+    key-store: classpath:cert/server.p12
+    key-store-password: 123
+    key-store-type: PKCS12
+    key-alias: tomcat
