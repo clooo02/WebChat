@@ -17,18 +17,16 @@ public class TransferMessage implements Serializable {
 
     private int toId;
 
-    private byte dataType;
-
     private byte[] data;
+
 
     public TransferMessage(byte type, int messageId,
                            int fromId, int toId,
-                           byte dataType, byte[] data) {
+                           byte[] data) {
         this.type = type;
         this.messageId = messageId;
         this.fromId = fromId;
         this.toId = toId;
-        this.dataType = dataType;
         this.data = data;
     }
 
@@ -48,12 +46,29 @@ public class TransferMessage implements Serializable {
         return toId;
     }
 
-    public byte getDataType() {
-        return dataType;
-    }
 
     public byte[] getData() {
         return data;
+    }
+
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    public void setMessageId(int messageId) {
+        this.messageId = messageId;
+    }
+
+    public void setFromId(int fromId) {
+        this.fromId = fromId;
+    }
+
+    public void setToId(int toId) {
+        this.toId = toId;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
     @Override
@@ -63,7 +78,6 @@ public class TransferMessage implements Serializable {
                 ", messageId=" + messageId +
                 ", fromId=" + fromId +
                 ", toId=" + toId +
-                ", dataType=" + dataType +
                 ", data=" + new String(data, StandardCharsets.UTF_8) +
                 '}';
     }

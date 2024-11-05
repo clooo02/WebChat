@@ -2,6 +2,7 @@ package com.clooo.webchat.ws.protocol;
 
 import com.clooo.webchat.ws.message.TransferMessage;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;

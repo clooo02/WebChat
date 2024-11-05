@@ -28,7 +28,7 @@ public class RoomController {
         if (joinRoom) {
             return Result.ok();
         }
-        return Result.error("进入" + roomCode + "失败");
+        return Result.error("enter " + roomCode + " failure");
     }
 
     @GetMapping("/left/{roomCode}/{id}")

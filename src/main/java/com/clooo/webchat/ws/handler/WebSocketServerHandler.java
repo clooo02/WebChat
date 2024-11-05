@@ -1,12 +1,11 @@
 package com.clooo.webchat.ws.handler;
 
 
-import com.clooo.webchat.ws.manager.RoomSessionManager;
 import com.clooo.webchat.ws.manager.ChannelManager;
+import com.clooo.webchat.ws.manager.RoomSessionManager;
 import com.clooo.webchat.ws.manager.SingleSessionManager;
 import com.clooo.webchat.ws.message.TransferMessage;
-import com.clooo.webchat.ws.message.type.TransferDataType;
-import com.clooo.webchat.ws.message.type.TransferMessageType;
+import com.clooo.webchat.ws.message.type.MessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -41,11 +40,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Transfer
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-//        cause.printStackTrace();
+        cause.printStackTrace();
         closeSession(ctx);
     }
 
-    private void closeSession(ChannelHandlerContext ctx){
+    private void closeSession(ChannelHandlerContext ctx) {
         Integer userId = channelManager.removeChannel(ctx.channel().id());
         // 根据userId断开相关连接
         if (userId != null) {
@@ -65,35 +64,35 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Transfer
 
     private void handleWebSocketFrame(ChannelHandlerContext ctx, TransferMessage message) throws IOException {
         byte messageType = message.getType();
+        int fromId = message.getFromId();
         final Channel channel = ctx.channel();
         switch (messageType) {
-            case TransferMessageType.LOGIN -> {
-                channelManager.setChannelByUserId(message.getFromId(), channel);
-                channelManager.setUserIdByChannelId(channel.id(), message.getFromId());
-                TransferMessage o = new TransferMessage(TransferMessageType.SYSTEM_RESPONSE, 0,
-                        TransferMessage.SYSTEM_ID, message.getFromId(),
-                        TransferDataType.DEFAULT, "登录成功".getBytes());
+            case MessageType.LOGIN -> {
+                channelManager.setChannelByUserId(fromId, channel);
+                channelManager.setUserIdByChannelId(channel.id(), fromId);
+                TransferMessage o = new TransferMessage(MessageType.SYSTEM_RESPONSE, 0,
+                        TransferMessage.SYSTEM_ID, fromId,
+                        "Login Success".getBytes());
                 ctx.channel().writeAndFlush(o);
             }
-            case TransferMessageType.ROOM_MESSAGE -> {
+            case MessageType.ROOM_MESSAGE -> {
                 List<Integer> roomMembers = roomSessionManager.getRoomMembers(String.valueOf(message.getToId()));
                 for (Integer userId : roomMembers) {
-                    if (userId != message.getFromId()) {
+                    if (userId != fromId) {
                         Channel c = channelManager.getChannelByUserId(userId);
                         c.writeAndFlush(message);
                     }
                 }
             }
-            case TransferMessageType.WEBRTC -> {
+            case MessageType.WEBRTC_INFO, MessageType.WEBRTC_ERROR,
+                    MessageType.WEBRTC_SDP_ANSWER, MessageType.WEBRTC_SDP_OFFER,
+                    MessageType.WEBRTC_ICE_CANDIDATE -> {
                 singleSessionManager.handlerMessage(message);
             }
             default -> throw new IllegalArgumentException("Unknown message type: " + message.getType());
         }
 
     }
-
-
-
 
 
 }

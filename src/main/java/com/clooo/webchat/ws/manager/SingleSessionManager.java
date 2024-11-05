@@ -1,8 +1,7 @@
 package com.clooo.webchat.ws.manager;
 
 import com.clooo.webchat.ws.message.TransferMessage;
-import com.clooo.webchat.ws.message.type.TransferDataType;
-import com.clooo.webchat.ws.message.type.TransferMessageType;
+import com.clooo.webchat.ws.message.type.MessageType;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
@@ -22,16 +21,16 @@ public class SingleSessionManager {
     }
 
     public void handlerMessage(TransferMessage message) {
-        switch (message.getDataType()) {
-            case TransferDataType.DEFAULT -> {
+        switch (message.getType()) {
+            case MessageType.WEBRTC_INFO -> {
                 handleDefaultMessage(message);
             }
-            case TransferDataType.WEBRTC_SDP_OFFER,
-                    TransferDataType.WEBRTC_SDP_ANSWER,
-                    TransferDataType.WEBRTC_ICE_CANDIDATE -> {
+            case MessageType.WEBRTC_SDP_OFFER,
+                    MessageType.WEBRTC_SDP_ANSWER,
+                    MessageType.WEBRTC_ICE_CANDIDATE -> {
                 forwardMessageToPeer(message);
             }
-            case TransferDataType.WEBRTC_ERROR -> {
+            case MessageType.WEBRTC_ERROR -> {
                 removeSession(message.getFromId());
             }
         }
@@ -52,13 +51,13 @@ public class SingleSessionManager {
             // 会话存在，用户加入会话
             if (session.isFull()) {
                 // 该会话人数已满
-                notifyPeer(fromId, TransferDataType.WEBRTC_ERROR, "加入房间失败".getBytes());
+                notifyPeer(fromId, MessageType.WEBRTC_ERROR, "JOIN_SESSION_ERROR".getBytes());
             } else {
                 session.setU2(fromId);
                 userSessionMap.put(fromId, code);
                 // 通知用户1，用户2到来
                 Integer u1 = session.getU1();
-                notifyPeer(u1, TransferDataType.DEFAULT, ByteBuffer.allocate(4).putInt(fromId).array());
+                notifyPeer(u1, MessageType.WEBRTC_INFO, ByteBuffer.allocate(4).putInt(fromId).array());
             }
         }
     }
@@ -76,22 +75,22 @@ public class SingleSessionManager {
                 Integer u2 = session.getU2();
                 if (u1 != null && !u1.equals(userId)) {
                     userSessionMap.remove(u1);
-                    notifyPeer(u1, TransferDataType.WEBRTC_ERROR, "当前会话已结束".getBytes());
+                    notifyPeer(u1, MessageType.WEBRTC_ERROR, "Current Session End".getBytes());
                 }
                 if (u2 != null && !u2.equals(userId)) {
                     userSessionMap.remove(u2);
-                    notifyPeer(u2, TransferDataType.WEBRTC_ERROR, "当前会话已结束".getBytes());
+                    notifyPeer(u2, MessageType.WEBRTC_ERROR, "Current Session End".getBytes());
                 }
             }
         }
     }
 
-    private void notifyPeer(Integer peerId, byte dataType, byte[] info) {
+    private void notifyPeer(Integer peerId, byte messageType, byte[] info) {
         if (peerId != null) {
             TransferMessage error = new TransferMessage(
-                    TransferMessageType.WEBRTC, 0,
+                    messageType, 0,
                     TransferMessage.SYSTEM_ID, peerId,
-                    dataType, info
+                    info
             );
             channelManager.getChannelByUserId(peerId).writeAndFlush(error);
         }
